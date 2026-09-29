@@ -1,17 +1,19 @@
-$registryPath = 'HKLM:\SOFTWARE\CaptureTech\Autopilot GDAP'
 $expectedPublisher = 'CN=CaptureTech IT-Services BV'
+$exeName = 'capturetech-autopilot-gdap.exe'
 
-if (-not (Test-Path -LiteralPath $registryPath)) { exit 1 }
+$candidatePaths = @(
+    'C:\Program Files\CaptureTech\Autopilot GDAP\capturetech-autopilot-gdap.exe',
+    'C:\Program Files (x86)\CaptureTech\Autopilot GDAP\capturetech-autopilot-gdap.exe'
+)
 
-$installation = Get-ItemProperty -LiteralPath $registryPath
-if ([string]::IsNullOrWhiteSpace($installation.ExecutablePath) -or -not (Test-Path -LiteralPath $installation.ExecutablePath -PathType Leaf)) {
-    exit 1
+foreach ($executablePath in $candidatePaths) {
+    if (-not (Test-Path -LiteralPath $executablePath -PathType Leaf)) { continue }
+
+    $signature = Get-AuthenticodeSignature -LiteralPath $executablePath
+    if ($signature.Status -eq 'Valid' -and $signature.SignerCertificate.Subject -like "*$expectedPublisher*") {
+        Write-Output "CaptureTech Autopilot GDAP is installed: $executablePath"
+        exit 0
+    }
 }
 
-$signature = Get-AuthenticodeSignature -LiteralPath $installation.ExecutablePath
-if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notlike "*$expectedPublisher*") {
-    exit 1
-}
-
-Write-Output "CaptureTech Autopilot GDAP is installed: $($installation.ExecutablePath)"
-exit 0
+exit 1
