@@ -10,6 +10,8 @@ klanttenant via GDAP, Microsoft Graph en Windows Autopilot.
 3. Gebruik in OOBE de [Tauri-app of WPF-fallback](OOBE).
 4. Raadpleeg de [troubleshootingstappen](Troubleshooting) bij consent-, Graph-
    of groepsfouten.
+5. Beheerders vinden de release-inrichting onder
+   [Azure Artifact Signing](Azure-Artifact-Signing).
 
 ## Belangrijke uitgangspunten
 

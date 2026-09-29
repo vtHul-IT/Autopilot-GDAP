@@ -8,6 +8,12 @@ on:
     tags:
       - "tauri-v*"
   workflow_dispatch:
+    inputs:
+      sign_test:
+        description: "Onderteken een testartifact via de protected release-signing environment, zonder GitHub Release te publiceren"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -73,15 +79,109 @@ jobs:
       - name: EXE als artifact bewaren
         uses: actions/upload-artifact@v4
         with:
-          name: CaptureTech-Autopilot-GDAP-x64
+          name: CaptureTech-Autopilot-GDAP-unsigned-x64
           path: |
             tauri-app/src-tauri/target/x86_64-pc-windows-msvc/release/capturetech-autopilot-gdap.exe
             tauri-app/src-tauri/target/x86_64-pc-windows-msvc/release/capturetech-autopilot-gdap.exe.sha256
           if-no-files-found: error
 
+  sign-release-artifact:
+    if: startsWith(github.ref, 'refs/tags/tauri-v') || (github.event_name == 'workflow_dispatch' && inputs.sign_test)
+    needs: portable-windows-exe
+    runs-on: windows-2022
+    environment: release-signing
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Signingconfiguratie controleren
+        shell: pwsh
+        env:
+          AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          AZURE_ARTIFACT_SIGNING_ENDPOINT: ${{ vars.AZURE_ARTIFACT_SIGNING_ENDPOINT }}
+          AZURE_ARTIFACT_SIGNING_ACCOUNT: ${{ vars.AZURE_ARTIFACT_SIGNING_ACCOUNT }}
+          AZURE_ARTIFACT_SIGNING_PROFILE: ${{ vars.AZURE_ARTIFACT_SIGNING_PROFILE }}
+          AZURE_SIGNING_PUBLISHER_SUBJECT: ${{ vars.AZURE_SIGNING_PUBLISHER_SUBJECT }}
+        run: |
+          $required = @(
+            'AZURE_CLIENT_ID',
+            'AZURE_TENANT_ID',
+            'AZURE_SUBSCRIPTION_ID',
+            'AZURE_ARTIFACT_SIGNING_ENDPOINT',
+            'AZURE_ARTIFACT_SIGNING_ACCOUNT',
+            'AZURE_ARTIFACT_SIGNING_PROFILE',
+            'AZURE_SIGNING_PUBLISHER_SUBJECT'
+          )
+          $missing = $required | Where-Object { [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($_)) }
+          if ($missing) {
+            throw "De protected GitHub Environment 'release-signing' mist variabelen: $($missing -join ', '). Een release mag niet unsigned worden gepubliceerd."
+          }
+
+      - name: Niet-ondertekend artifact ophalen
+        uses: actions/download-artifact@v4
+        with:
+          name: CaptureTech-Autopilot-GDAP-unsigned-x64
+          path: release-artifacts
+
+      - name: Aanmelden bij Azure via GitHub OIDC
+        uses: azure/login@v3
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: EXE ondertekenen met Azure Artifact Signing
+        uses: azure/artifact-signing-action@v2
+        with:
+          endpoint: ${{ vars.AZURE_ARTIFACT_SIGNING_ENDPOINT }}
+          signing-account-name: ${{ vars.AZURE_ARTIFACT_SIGNING_ACCOUNT }}
+          certificate-profile-name: ${{ vars.AZURE_ARTIFACT_SIGNING_PROFILE }}
+          files: ${{ github.workspace }}\release-artifacts\capturetech-autopilot-gdap.exe
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+
+      - name: Authenticode-handtekening verifiëren
+        shell: pwsh
+        env:
+          AZURE_SIGNING_PUBLISHER_SUBJECT: ${{ vars.AZURE_SIGNING_PUBLISHER_SUBJECT }}
+        run: |
+          $exe = Join-Path $PWD 'release-artifacts\capturetech-autopilot-gdap.exe'
+          $signature = Get-AuthenticodeSignature -LiteralPath $exe
+          if ($signature.Status -ne [System.Management.Automation.SignatureStatus]::Valid) {
+            throw "Authenticode-validatie is niet geldig: $($signature.Status) $($signature.StatusMessage)"
+          }
+          $subject = $signature.SignerCertificate.Subject
+          if ($subject -notlike "*$env:AZURE_SIGNING_PUBLISHER_SUBJECT*") {
+            throw "Onverwachte signing publisher: '$subject'. Verwacht bevat: '$env:AZURE_SIGNING_PUBLISHER_SUBJECT'."
+          }
+          if ($null -eq $signature.TimeStamperCertificate) {
+            throw 'De ondertekende EXE bevat geen RFC3161-timestamp.'
+          }
+          Write-Host "Geldige handtekening van: $subject"
+
+      - name: SHA-256 van signed EXE maken
+        shell: pwsh
+        run: |
+          $exe = Join-Path $PWD 'release-artifacts\capturetech-autopilot-gdap.exe'
+          $hash = (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  capturetech-autopilot-gdap.exe" | Set-Content -LiteralPath (Join-Path $PWD 'release-artifacts\capturetech-autopilot-gdap.exe.sha256') -Encoding ascii
+
+      - name: Signed EXE als artifact bewaren
+        uses: actions/upload-artifact@v4
+        with:
+          name: CaptureTech-Autopilot-GDAP-signed-x64
+          path: |
+            release-artifacts/capturetech-autopilot-gdap.exe
+            release-artifacts/capturetech-autopilot-gdap.exe.sha256
+          if-no-files-found: error
+
   publish-release:
     if: startsWith(github.ref, 'refs/tags/tauri-v')
-    needs: portable-windows-exe
+    needs: sign-release-artifact
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -90,11 +190,11 @@ jobs:
       - name: Release-artifact ophalen
         uses: actions/download-artifact@v4
         with:
-          name: CaptureTech-Autopilot-GDAP-x64
+          name: CaptureTech-Autopilot-GDAP-signed-x64
           path: release-artifacts
 
       - name: GitHub Release publiceren
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           generate_release_notes: true
           files: |

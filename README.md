@@ -9,7 +9,7 @@ CaptureTech-toolset voor IT-hulpmedewerkers om Windows Autopilot-apparaten via G
 
 Naast de bestaande PowerShell/WPF-tool staat er een moderne, portable Windows-desktop-app in [`tauri-app`](tauri-app). Op een normale Windows-desktop gebruikt deze Windows Web Account Manager (WAM) voor de partner-sessie, delegated Graph-rechten en de Autopilot-flow. Tijdens OOBE gebruikt hij browser-SSO. Wanneer WAM voor een specifieke GDAP-klant alleen een B2B-gasttoken zonder klantrolcontext oplevert, opent de app automatisch browser-SSO voor uitsluitend die klant. De app heeft een CaptureTech-interface voor klantselectie, profielkeuze, groepsafhandeling, live voortgang en herstart.
 
-De eerste Tauri-release is bedoeld voor Windows 10/11 x64 en vraagt altijd administratorrechten. De EXE is portable: installatie is niet nodig. Als Windows de EXE toch niet verhoogd start, toont de app een knop **Start opnieuw als administrator**; die opent de normale UAC-bevestiging en start dezelfde EXE opnieuw met een verhoogd token. Windows SmartScreen kan een waarschuwing tonen zolang de EXE niet code-signed is.
+De Tauri-release is bedoeld voor Windows 10/11 x64 en vraagt altijd administratorrechten. De EXE is portable: installatie is niet nodig. Als Windows de EXE toch niet verhoogd start, toont de app een knop **Start opnieuw als administrator**; die opent de normale UAC-bevestiging en start dezelfde EXE opnieuw met een verhoogd token. Nieuwe releases worden via Azure Artifact Signing ondertekend met de CaptureTech IT-Services-publisher. De historische `tauri-v0.1.4`-release is nog unsigned.
 
 Benodigd op het apparaat:
 
@@ -36,7 +36,7 @@ Een GitHub Actions-workflow bouwt de Windows x64-EXE op een Windows-runner. Publ
 tauri-v0.1.0
 ```
 
-De workflow voegt `capturetech-autopilot-gdap.exe` én `capturetech-autopilot-gdap.exe.sha256` toe aan de bijbehorende GitHub Release. Controleer de SHA-256 vóór bredere distributie. De huidige `Get-AutopilotGDAP.ps1` blijft beschikbaar als fallback voor OOBE, herstel en diagnose.
+De workflow voegt uitsluitend een met Azure Artifact Signing ondertekende `capturetech-autopilot-gdap.exe` én de bijbehorende `capturetech-autopilot-gdap.exe.sha256` toe aan de GitHub Release. Controleer de SHA-256 vóór bredere distributie. De huidige `Get-AutopilotGDAP.ps1` blijft beschikbaar als fallback voor OOBE, herstel en diagnose.
 
 ### Tauri-interface
 
