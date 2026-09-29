@@ -38,8 +38,11 @@ privé.
   en houdt tokens uitsluitend in de actieve workercontext. Er wordt geen eigen
   Partner Center-refresh-tokenbestand aangemaakt; een oude DPAPI-cache wordt na
   een succesvolle WAM-sessie verwijderd. Tijdens OOBE wordt browser-SSO gebruikt.
-- Releases zijn vooralsnog niet code-signed. Controleer daarom altijd de GitHub
-  Release, tag en checksum vóór distributie.
+- Nieuwe Tauri-releases vereisen Azure Artifact Signing via een protected GitHub
+  Environment en GitHub OIDC. De signing private key verlaat Azure nooit en
+  GitHub bevat geen PFX of client secret. Controleer alsnog release, tag,
+  Authenticode-publisher en checksum vóór distributie. `tauri-v0.1.4` is een
+  historische unsigned release.
 
 ## Geautomatiseerde controles
 
