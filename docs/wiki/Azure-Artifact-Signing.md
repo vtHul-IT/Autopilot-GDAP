@@ -72,6 +72,25 @@ Deze identifiers zijn geen geheimen. Configureer nadrukkelijk geen
 private key van de release-GitHub-App toe als environment secret
 `RELEASE_PUBLISHER_APP_PRIVATE_KEY`.
 
+## Eenmalig: GitHub App voor publieke release-upload
+
+Maak na het activeren van de protected Environment een organisatie-GitHub App,
+bijvoorbeeld `CaptureTech Autopilot GDAP Release Publisher`.
+
+1. Open **vtHul-IT > Settings > Developer settings > GitHub Apps > New GitHub
+   App**.
+2. Schakel webhooks uit en geef uitsluitend repository permission
+   **Contents: Read and write**. Metadata blijft read-only.
+3. Installeer de App alleen op `Autopilot-GDAP-Downloads`; installeer hem niet
+   op de private bronrepository of andere organisatierepositories.
+4. Genereer één private key, voeg de volledige PEM-inhoud toe als environment
+   secret `RELEASE_PUBLISHER_APP_PRIVATE_KEY` en voeg het getoonde App ID toe
+   als variable `RELEASE_PUBLISHER_APP_ID`.
+5. Verwijder de lokale private-keydownload direct nadat de secret is opgeslagen.
+
+De workflow wisselt deze private key uitsluitend tijdens een tagrelease om voor
+een kortlevend GitHub-App-token met toegang tot de publieke downloadrepository.
+
 ## Releaseflow
 
 - Pull requests bouwen en testen alleen; ze kunnen Azure nooit benaderen.
