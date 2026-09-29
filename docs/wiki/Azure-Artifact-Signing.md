@@ -14,8 +14,7 @@ opgeslagen.
 | Signing account | `ctsigningcert` |
 | Certificate profile | `CISIT` (Public Trust) |
 | Verwachte publisher | `CN=CaptureTech IT-Services BV` |
-| Private bronrepository | `vtHul-IT/Autopilot-GDAP` |
-| Publieke downloads | `vtHul-IT/Autopilot-GDAP-Downloads` |
+| Bron- en releaserepository | `vtHul-IT/Autopilot-GDAP` |
 
 Artifact Signing gebruikt kortlevende certificaten. De release-workflow voegt
 daarom verplicht een RFC3161-timestamp toe; een correct ondertekende EXE blijft
@@ -50,10 +49,9 @@ appregistraties en roltoewijzingen mag beheren.
 
 ## Eenmalig: protected GitHub Environment
 
-Maak in de private bronrepository via **Settings > Environments** de environment
+Maak in de repository via **Settings > Environments** de environment
 `release-signing` en stel minimaal één CaptureTech releasebeheerder in als
-required reviewer. GitHub Free ondersteunt required reviewers niet voor een
-private organisatierepository; hiervoor is GitHub Team of Enterprise nodig.
+required reviewer. Dit werkt voor deze publieke repository ook met GitHub Free.
 Voeg daarna onderstaande **environment variables** toe:
 
 | Variabele | Waarde |
@@ -65,31 +63,9 @@ Voeg daarna onderstaande **environment variables** toe:
 | `AZURE_ARTIFACT_SIGNING_ACCOUNT` | `ctsigningcert` |
 | `AZURE_ARTIFACT_SIGNING_PROFILE` | `CISIT` |
 | `AZURE_SIGNING_PUBLISHER_SUBJECT` | `CN=CaptureTech IT-Services BV` |
-| `RELEASE_PUBLISHER_APP_ID` | App ID van de GitHub App voor publicatie naar `Autopilot-GDAP-Downloads` |
 
 Deze identifiers zijn geen geheimen. Configureer nadrukkelijk geen
-`AZURE_CLIENT_SECRET`, certificaatbestand of PFX in GitHub. Voeg alleen de
-private key van de release-GitHub-App toe als environment secret
-`RELEASE_PUBLISHER_APP_PRIVATE_KEY`.
-
-## Eenmalig: GitHub App voor publieke release-upload
-
-Maak na het activeren van de protected Environment een organisatie-GitHub App,
-bijvoorbeeld `CaptureTech Autopilot GDAP Release Publisher`.
-
-1. Open **vtHul-IT > Settings > Developer settings > GitHub Apps > New GitHub
-   App**.
-2. Schakel webhooks uit en geef uitsluitend repository permission
-   **Contents: Read and write**. Metadata blijft read-only.
-3. Installeer de App alleen op `Autopilot-GDAP-Downloads`; installeer hem niet
-   op de private bronrepository of andere organisatierepositories.
-4. Genereer één private key, voeg de volledige PEM-inhoud toe als environment
-   secret `RELEASE_PUBLISHER_APP_PRIVATE_KEY` en voeg het getoonde App ID toe
-   als variable `RELEASE_PUBLISHER_APP_ID`.
-5. Verwijder de lokale private-keydownload direct nadat de secret is opgeslagen.
-
-De workflow wisselt deze private key uitsluitend tijdens een tagrelease om voor
-een kortlevend GitHub-App-token met toegang tot de publieke downloadrepository.
+`AZURE_CLIENT_SECRET`, certificaatbestand of PFX in GitHub.
 
 ## Releaseflow
 
@@ -99,7 +75,7 @@ een kortlevend GitHub-App-token met toegang tot de publieke downloadrepository.
   geen GitHub Release aangemaakt.
 - Een `tauri-v*` tag bouwt eerst de EXE en wacht daarna op goedkeuring van
   `release-signing`. Pas na een geldige handtekening en timestamp wordt de
-  release gepubliceerd in `vtHul-IT/Autopilot-GDAP-Downloads`.
+  release gepubliceerd in `vtHul-IT/Autopilot-GDAP`.
 - Ontbreekt een vereiste GitHub-variable of faalt signing, dan faalt de run en
   wordt geen unsigned release gepubliceerd.
 
@@ -115,7 +91,6 @@ ingevulde `TimeStamperCertificate`.
 
 ## Repositoryzichtbaarheid en publieke downloads
 
-De bronrepository is privé. De workflow gebruikt een GitHub App met uitsluitend
-`Contents: Read and write`, geïnstalleerd op de publieke downloadrepository,
-om releases over repositories heen te publiceren. Gebruik geen persoonlijke
-PAT voor deze koppeling.
+De broncode is publiek beschikbaar. De protected Environment voorkomt dat een
+pull request, fork of gewone build Azure-signing kan gebruiken; alleen een
+goedgekeurde signingjob voor een release-tag krijgt een OIDC-token.

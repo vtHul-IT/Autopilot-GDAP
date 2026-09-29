@@ -91,7 +91,7 @@ jobs:
     runs-on: windows-2022
     environment: release-signing
     permissions:
-      contents: read
+      contents: write
       id-token: write
 
     steps:
@@ -179,57 +179,11 @@ jobs:
             release-artifacts/capturetech-autopilot-gdap.exe.sha256
           if-no-files-found: error
 
-      - name: Publicatieconfiguratie controleren
-        if: startsWith(github.ref, 'refs/tags/tauri-v')
-        shell: pwsh
-        env:
-          RELEASE_PUBLISHER_APP_ID: ${{ vars.RELEASE_PUBLISHER_APP_ID }}
-          RELEASE_PUBLISHER_APP_PRIVATE_KEY: ${{ secrets.RELEASE_PUBLISHER_APP_PRIVATE_KEY }}
-        run: |
-          $required = @('RELEASE_PUBLISHER_APP_ID', 'RELEASE_PUBLISHER_APP_PRIVATE_KEY')
-          $missing = $required | Where-Object { [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($_)) }
-          if ($missing) {
-            throw "De protected GitHub Environment 'release-signing' mist publicatieconfiguratie: $($missing -join ', '). Een signed release mag niet naar de downloadrepository worden gepubliceerd."
-          }
-
-      - name: Token voor publieke downloadrepository maken
-        if: startsWith(github.ref, 'refs/tags/tauri-v')
-        id: public-release-token
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ vars.RELEASE_PUBLISHER_APP_ID }}
-          private-key: ${{ secrets.RELEASE_PUBLISHER_APP_PRIVATE_KEY }}
-          owner: vtHul-IT
-          repositories: Autopilot-GDAP-Downloads
-
-      - name: Publieke releasenotities maken
-        if: startsWith(github.ref, 'refs/tags/tauri-v')
-        shell: pwsh
-        run: |
-          $tag = $env:GITHUB_REF_NAME
-          @"
-          # CaptureTech Autopilot GDAP $tag
-
-          Deze portable Windows x64-app is ondertekend met Azure Artifact Signing
-          voor **CaptureTech IT-Services BV**.
-
-          Controleer voor gebruik de meegeleverde SHA-256-checksum en de
-          Authenticode-handtekening van `capturetech-autopilot-gdap.exe`.
-
-          Broncode en technische documentatie worden beheerd in een private
-          CaptureTech-repository.
-          "@ | Set-Content -LiteralPath (Join-Path $PWD 'release-artifacts\RELEASE-NOTES.md') -Encoding utf8
-
-      - name: Public signed release publiceren
+      - name: Signed release publiceren
         if: startsWith(github.ref, 'refs/tags/tauri-v')
         uses: softprops/action-gh-release@v3
         with:
-          repository: vtHul-IT/Autopilot-GDAP-Downloads
-          token: ${{ steps.public-release-token.outputs.token }}
-          tag_name: ${{ github.ref_name }}
-          target_commitish: main
-          name: CaptureTech Autopilot GDAP ${{ github.ref_name }}
-          body_path: release-artifacts/RELEASE-NOTES.md
+          generate_release_notes: true
           files: |
             release-artifacts/capturetech-autopilot-gdap.exe
             release-artifacts/capturetech-autopilot-gdap.exe.sha256

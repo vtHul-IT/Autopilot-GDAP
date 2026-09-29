@@ -24,5 +24,4 @@ klanttenant via GDAP, Microsoft Graph en Windows Autopilot.
   security group.
 
 De broncode, downloads en security policy staan in de
-[private hoofdrepository](https://github.com/vtHul-IT/Autopilot-GDAP) en de
-[publieke downloadrepository](https://github.com/vtHul-IT/Autopilot-GDAP-Downloads).
+[hoofdrepository](https://github.com/vtHul-IT/Autopilot-GDAP).

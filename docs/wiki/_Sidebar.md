@@ -9,6 +9,5 @@
 
 ---
 
-- [Private repository](https://github.com/vtHul-IT/Autopilot-GDAP)
-- [Publieke downloads](https://github.com/vtHul-IT/Autopilot-GDAP-Downloads)
+- [Repository](https://github.com/vtHul-IT/Autopilot-GDAP)
 - [Security policy](https://github.com/vtHul-IT/Autopilot-GDAP/blob/master/SECURITY.md)

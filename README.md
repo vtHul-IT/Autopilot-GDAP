@@ -36,7 +36,7 @@ Een GitHub Actions-workflow bouwt de Windows x64-EXE op een Windows-runner. Publ
 tauri-v0.1.0
 ```
 
-De workflow voegt uitsluitend een met Azure Artifact Signing ondertekende `capturetech-autopilot-gdap.exe` én de bijbehorende `capturetech-autopilot-gdap.exe.sha256` toe aan de publieke [downloadrepository](https://github.com/vtHul-IT/Autopilot-GDAP-Downloads). Controleer de SHA-256 vóór bredere distributie. De huidige `Get-AutopilotGDAP.ps1` blijft beschikbaar als interne fallback voor OOBE, herstel en diagnose.
+De workflow voegt uitsluitend een met Azure Artifact Signing ondertekende `capturetech-autopilot-gdap.exe` én de bijbehorende `capturetech-autopilot-gdap.exe.sha256` toe aan de publieke GitHub Release. Controleer de SHA-256 vóór bredere distributie. De huidige `Get-AutopilotGDAP.ps1` blijft beschikbaar als fallback voor OOBE, herstel en diagnose.
 
 ### Tauri-interface
 
@@ -138,7 +138,7 @@ Deze portable EXE vraagt bij normaal Windows-gebruik automatisch administratorre
 
 ```powershell
 $exe = Join-Path $env:TEMP "CaptureTech-Autopilot-GDAP.exe"
-irm "https://github.com/vtHul-IT/Autopilot-GDAP-Downloads/releases/latest/download/capturetech-autopilot-gdap.exe" -OutFile $exe
+irm "https://github.com/vtHul-IT/Autopilot-GDAP/releases/latest/download/capturetech-autopilot-gdap.exe" -OutFile $exe
 Start-Process -FilePath $exe
 ```
 
@@ -176,4 +176,4 @@ irm "https://raw.githubusercontent.com/vtHul-IT/Autopilot-GDAP/refs/heads/master
 
 ## Documentatie
 
-De GitHub Wiki-functie is ingeschakeld. De bronpagina's voor installatie en releases, OOBE, GDAP/PIM-rechten en troubleshooting staan in [`docs/wiki`](docs/wiki). GitHub maakt de afzonderlijke wiki-repository pas aan nadat er eenmaal via de Wiki-pagina van de private bronrepository een eerste pagina is gemaakt; daarna kunnen deze pagina's direct worden gepubliceerd.
+De GitHub Wiki-functie is ingeschakeld. De bronpagina's voor installatie en releases, OOBE, GDAP/PIM-rechten en troubleshooting staan in [`docs/wiki`](docs/wiki). GitHub maakt de afzonderlijke wiki-repository pas aan nadat er eenmaal via de Wiki-pagina van de repository een eerste pagina is gemaakt; daarna kunnen deze pagina's direct worden gepubliceerd.
