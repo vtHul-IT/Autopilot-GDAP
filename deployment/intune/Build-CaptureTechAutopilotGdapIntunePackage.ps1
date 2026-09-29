@@ -44,7 +44,13 @@ if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notl
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Install-CaptureTechAutopilotGdap.ps1') -Destination $sourceDirectory
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Uninstall-CaptureTechAutopilotGdap.ps1') -Destination $sourceDirectory
 
-$detectionScript = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes((Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Detect-CaptureTechAutopilotGdap.ps1') -Raw)))
+$detectionTemplate = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Detect-CaptureTechAutopilotGdap.ps1') -Raw
+if ($detectionTemplate -notmatch '__EXPECTED_VERSION__') {
+    throw 'De detectietemplate bevat de verwachte versie-placeholder niet.'
+}
+
+$detectionScriptContent = $detectionTemplate.Replace('__EXPECTED_VERSION__', $version)
+$detectionScript = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($detectionScriptContent))
 $appDefinition = [ordered]@{
     '@odata.type' = '#microsoft.graph.win32LobApp'
     displayName = 'CaptureTech Autopilot GDAP'

@@ -35,4 +35,10 @@ Install-Module WinTuner -Scope CurrentUser
 
 Voor een verplichte installatie vervang je `-AvailableFor` door `-RequiredFor`. WinTuner accepteert ook meerdere groep-object-ID's. Gebruik geen `AllDevices` of `AllUsers` totdat de testgroep de installatie, de Startmenu-snelkoppeling en de detectie heeft bevestigd.
 
-De detectieregel controleert de registry-informatie, het daadwerkelijke EXE-bestand én opnieuw de geldige CaptureTech-signatuur. De uninstaller verwijdert zowel de app als de Startmenu-snelkoppeling.
+De detectieregel controleert het daadwerkelijke EXE-bestand, de geldige CaptureTech-signatuur én exact de releaseversie waarmee het pakket is gemaakt. Een apparaat met een oudere versie wordt dus niet als geïnstalleerd gezien.
+
+## Een bestaande Intune-app bijwerken
+
+Voor elke nieuwe release bouw je een nieuw pakket met de nieuwe `-ReleaseTag`. Upload daarna de nieuwe content naar de bestaande Win32-app **en** vervang de detection rule door `detectionRules[0].scriptContent` uit het nieuwe `win32LobApp.json`. Alleen een nieuwe contentversie uploaden werkt niet voldoende: de oude detectieregel zou een oudere EXE anders blijven accepteren.
+
+Een app die als **Required** is toegewezen, wordt na de volgende Intune-evaluatie automatisch bijgewerkt. Bij **Available** verschijnt de nieuwe versie in Company Portal; de gebruiker start de update daar zelf.
