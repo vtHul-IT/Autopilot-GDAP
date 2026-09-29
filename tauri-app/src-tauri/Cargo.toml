@@ -1,6 +1,6 @@
 [package]
 name = "capturetech-autopilot-gdap"
-version = "0.1.5"
+version = "0.1.6"
 description = "CaptureTech Autopilot GDAP"
 authors = ["CaptureTech"]
 edition = "2021"
