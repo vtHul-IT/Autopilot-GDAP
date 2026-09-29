@@ -6,7 +6,11 @@ $ErrorActionPreference = 'Stop'
 $productName = 'CaptureTech Autopilot GDAP'
 $publisherSubject = 'CN=CaptureTech IT-Services BV'
 $exeName = 'capturetech-autopilot-gdap.exe'
-$installRoot = Join-Path $env:ProgramFiles 'CaptureTech\Autopilot GDAP'
+# Intune Management Extension can launch PowerShell in a 32-bit host. ProgramW6432
+# keeps the application in the native Program Files location on x64 Windows.
+$programFiles64 = [Environment]::GetEnvironmentVariable('ProgramW6432')
+if ([string]::IsNullOrWhiteSpace($programFiles64)) { $programFiles64 = $env:ProgramFiles }
+$installRoot = Join-Path $programFiles64 'CaptureTech\Autopilot GDAP'
 $targetExe = Join-Path $installRoot $exeName
 $registryPath = 'HKLM:\SOFTWARE\CaptureTech\Autopilot GDAP'
 $shortcutDirectory = Join-Path $env:ProgramData 'Microsoft\Windows\Start Menu\Programs\CaptureTech'
