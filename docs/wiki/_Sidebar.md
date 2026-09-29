@@ -5,6 +5,7 @@
 - [Rechten en GDAP](Permissions-and-GDAP)
 - [Installatie en releases](Installation-and-releases)
 - [Azure Artifact Signing](Azure-Artifact-Signing)
+- [Intune Win32-deployment](Intune-Win32-deployment)
 - [Troubleshooting](Troubleshooting)
 
 ---
