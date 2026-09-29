@@ -961,7 +961,7 @@ function Invoke-BrowserCustomerGraphFallback {
         [Parameter(Mandatory = $true)][object]$State,
         [Parameter(Mandatory = $true)][string]$TenantId,
         [Parameter(Mandatory = $true)][string]$CustomerName,
-        [ValidateSet("missingRoleContext", "tokenAcquisition")][string]$Reason = "missingRoleContext"
+        [ValidateSet("missingRoleContext", "tokenAcquisition", "desktopCustomerSso")][string]$Reason = "missingRoleContext"
     )
 
     if ($State.AuthMode -ne "wam") {
@@ -973,7 +973,10 @@ function Invoke-BrowserCustomerGraphFallback {
     # resulting token has no customer directory-role (`wids`) context. The
     # established auth-code browser flow obtains the role-bearing token for
     # that one customer without device code or persistent refresh tokens.
-    $fallbackMessage = if ($Reason -eq "tokenAcquisition") {
+    $fallbackMessage = if ($Reason -eq "desktopCustomerSso") {
+        "Voor $CustomerName wordt de klanttenant direct via browser-SSO geopend met hetzelfde IT-Hulp-account. Windows WAM blijft actief voor Partner Center."
+    }
+    elseif ($Reason -eq "tokenAcquisition") {
         "Windows WAM kon voor $CustomerName geen bruikbare klanttenanttoken ophalen. De browser opent voor SSO met hetzelfde IT-Hulp-account."
     }
     else {
@@ -1468,26 +1471,15 @@ function Invoke-ConnectCustomer {
     $customer = @($State.Customers | Where-Object { $_.tenantId -eq $TenantId } | Select-Object -First 1)
     if ($customer.Count -ne 1) { throw "De gekozen klanttenant komt niet uit de actieve Partner Center-klantenlijst." }
     $State.CustomerAuthMode = ""
-    try {
-        Connect-GraphTenant -State $State -TenantId $TenantId -Scopes $script:GraphScopes
-    }
-    catch {
-        if ($State.AuthMode -eq "wam" -and (Test-WamCustomerBrowserFallbackRequired -ErrorRecord $_)) {
-            Invoke-BrowserCustomerGraphFallback -State $State -TenantId $TenantId -CustomerName ([string]$customer[0].customerName) -Reason tokenAcquisition
-        }
-        else {
-            throw
-        }
-    }
-    if ($State.AuthMode -eq "wam" -and $State.CustomerAuthMode -ne "browserSsoFallback") {
-        if (Test-GraphTokenHasDirectoryRoleContext -AccessToken ([string]$State.GraphAccessToken)) {
-            $State.CustomerAuthMode = "wam"
-        }
-        else {
-            Invoke-BrowserCustomerGraphFallback -State $State -TenantId $TenantId -CustomerName ([string]$customer[0].customerName)
-        }
+    if ($State.AuthMode -eq "wam") {
+        # WAM remains the preferred partner-tenant and Partner Center session,
+        # but GDAP customer contexts are B2B. The browser authorization-code
+        # flow is the proven OOBE path and consistently carries that tenant's
+        # active role context, so use it directly for a selected customer.
+        Invoke-BrowserCustomerGraphFallback -State $State -TenantId $TenantId -CustomerName ([string]$customer[0].customerName) -Reason desktopCustomerSso
     }
     else {
+        Connect-GraphTenant -State $State -TenantId $TenantId -Scopes $script:GraphScopes
         $State.CustomerAuthMode = "browserOobe"
     }
     $State.TargetTenantId = $TenantId
