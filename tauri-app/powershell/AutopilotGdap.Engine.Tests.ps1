@@ -183,6 +183,7 @@ Assert-True -Condition ($engineText -match 'function Get-AutopilotProfilesForCur
 Assert-True -Condition ($engineText -match 'function Invoke-BrowserCustomerGraphFallback') -Name "WAM kan gericht naar browser-SSO voor een GDAP-klant terugvallen"
 Assert-True -Condition ($engineText -match 'Windows WAM heeft voor .* geen GDAP-rolcontext ontvangen') -Name "De browserfallback meldt duidelijk waarom deze nodig is"
 Assert-True -Condition ($engineText -match 'WAM kon voor .* geen bruikbare klanttenanttoken ophalen') -Name "Een WAM-brokerfout krijgt een klantgerichte browser-SSO-melding"
+Assert-True -Condition ($engineText -match 'desktopCustomerSso') -Name "Desktop gebruikt voor iedere klanttenant de bewezen browser-SSO-route"
 Assert-True -Condition ($engineText -match 'Test-WamCustomerBrowserFallbackRequired') -Name "Klanttenant-WAM-brokerfouten worden vóór een foutmelding onderschept"
 Assert-True -Condition ($engineText -match 'BrowserSso') -Name "De browserfallback kan WAM uitsluitend voor de klantcontext omzeilen"
 Assert-True -Condition ($engineText -match 'Connect-GraphTenant -State \$State -TenantId \$State\.TargetTenantId -Scopes \$script:GraphScopes -Interactive -ForceCustomerAccountSelection') -Name "WAM vraagt alleen bij een afgewezen token klanttenantbevestiging"

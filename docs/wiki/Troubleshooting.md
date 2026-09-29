@@ -14,16 +14,16 @@ Controleer of de GDAP-relatie actief is en of het IT-Hulp-account de juiste
 PIM-activatie heeft: minimaal Intune Administrator en, voor groepen, Groups
 Administrator.
 
-## WAM meldt een ontbrekende GDAP-rolcontext
+## Klanttenant opent in de browser
 
-Bij sommige GDAP-relaties geeft Windows Web Account Manager voor een klanttenant
-een B2B-gasttoken zonder directoryrolcontext (`wids`) terug, of faalt de
-tenant-specifieke brokeroproep met een WAM-fout. De app herkent beide gevallen
-vóór het laden van profielen en opent automatisch browser-SSO voor alleen die
-klant, met een login-hint voor hetzelfde IT-Hulp-account. Dit is geen device
-code-flow en de browser-token blijft alleen in het geheugen van de actieve
-appsessie. Na een succesvolle browseraanmelding toont het sessieoverzicht
-**Browser-SSO (GDAP)** als klantcontext.
+Windows WAM wordt gebruikt voor de partnertenant en Partner Center. Iedere
+geselecteerde GDAP-klanttenant opent vervolgens direct browser-SSO met een
+login-hint voor hetzelfde IT-Hulp-account. Daarmee voorkomen we dat WAM voor
+een B2B-klantcontext een token zonder directoryrolcontext (`wids`) teruggeeft
+of in de broker faalt. Dit is geen device code-flow en de browser-token blijft
+alleen in het geheugen van de actieve appsessie. Na een succesvolle
+browseraanmelding toont het sessieoverzicht **Browser-SSO (GDAP)** als
+klantcontext.
 
 ## WAM kan niet starten
 
@@ -39,7 +39,7 @@ niet afgemeld.
 Sluit andere toolinstanties en controleer of poort `8765` (Partner Center) of
 `8766` (Graph) niet door een ander proces wordt gebruikt. Tijdens OOBE gebruikt
 de tool de systeembrowser en geen device code; buiten OOBE gebruikt de Tauri-app
-WAM voor de partner-sessie en zo nodig browser-SSO voor een GDAP-klantcontext.
+WAM voor de partner-sessie en browser-SSO voor de GDAP-klantcontext.
 De app houdt de callbacklistener open wanneer Edge eerst een extra lokaal verzoek
 zoals een favicon doet. Verschijnt alsnog `ERR_CONNECTION_REFUSED` op een
 `localhost`-callback, sluit dan oude toolinstanties en start de app opnieuw.
