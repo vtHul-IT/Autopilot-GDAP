@@ -5,7 +5,7 @@
 Voer op een beheerpc met Azure CLI en Global Administrator-rechten uit:
 
 ```powershell
-irm "https://raw.githubusercontent.com/mvthul/Autopilot-GDAP/refs/heads/master/Setup-AutopilotApp.ps1" -OutFile .\Setup-AutopilotApp.ps1
+irm "https://raw.githubusercontent.com/vtHul-IT/Autopilot-GDAP/refs/heads/master/Setup-AutopilotApp.ps1" -OutFile .\Setup-AutopilotApp.ps1
 .\Setup-AutopilotApp.ps1 -PartnerTenantId "<PARTNER-TENANT-ID>"
 ```
 

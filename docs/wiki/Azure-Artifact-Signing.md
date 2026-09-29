@@ -14,6 +14,8 @@ opgeslagen.
 | Signing account | `ctsigningcert` |
 | Certificate profile | `CISIT` (Public Trust) |
 | Verwachte publisher | `CN=CaptureTech IT-Services BV` |
+| Private bronrepository | `vtHul-IT/Autopilot-GDAP` |
+| Publieke downloads | `vtHul-IT/Autopilot-GDAP-Downloads` |
 
 Artifact Signing gebruikt kortlevende certificaten. De release-workflow voegt
 daarom verplicht een RFC3161-timestamp toe; een correct ondertekende EXE blijft
@@ -26,13 +28,19 @@ appregistraties en roltoewijzingen mag beheren.
 
 1. Maak een single-tenant appregistratie, bijvoorbeeld
    `CaptureTech Autopilot GDAP Release Signing`.
-2. Maak voor de service principal een federated credential met:
+2. Maak voor de service principal een federated credential met de GitHub
+   Actions-scenario in de Azure-portal:
 
    | Veld | Waarde |
    | --- | --- |
    | Issuer | `https://token.actions.githubusercontent.com` |
    | Audience | `api://AzureADTokenExchange` |
-   | Subject | `repo:mvthul/Autopilot-GDAP:environment:release-signing` |
+   | Organization | `vtHul-IT` |
+   | Organization ID | `188970125` |
+   | Repository | `Autopilot-GDAP` |
+   | Repository ID | `1381417667` |
+   | Entity type | `Environment` |
+   | Environment | `release-signing` |
 
 3. Open signing-account `ctsigningcert` en wijs aan deze service principal
    uitsluitend de rol **Artifact Signing Certificate Profile Signer** toe,
@@ -42,9 +50,11 @@ appregistraties en roltoewijzingen mag beheren.
 
 ## Eenmalig: protected GitHub Environment
 
-Maak in de bronrepository via **Settings > Environments** de environment
+Maak in de private bronrepository via **Settings > Environments** de environment
 `release-signing` en stel minimaal één CaptureTech releasebeheerder in als
-required reviewer. Voeg onderstaande **environment variables** toe:
+required reviewer. GitHub Free ondersteunt required reviewers niet voor een
+private organisatierepository; hiervoor is GitHub Team of Enterprise nodig.
+Voeg daarna onderstaande **environment variables** toe:
 
 | Variabele | Waarde |
 | --- | --- |
@@ -55,9 +65,12 @@ required reviewer. Voeg onderstaande **environment variables** toe:
 | `AZURE_ARTIFACT_SIGNING_ACCOUNT` | `ctsigningcert` |
 | `AZURE_ARTIFACT_SIGNING_PROFILE` | `CISIT` |
 | `AZURE_SIGNING_PUBLISHER_SUBJECT` | `CN=CaptureTech IT-Services BV` |
+| `RELEASE_PUBLISHER_APP_ID` | App ID van de GitHub App voor publicatie naar `Autopilot-GDAP-Downloads` |
 
 Deze identifiers zijn geen geheimen. Configureer nadrukkelijk geen
-`AZURE_CLIENT_SECRET`, certificaatbestand of PFX in GitHub.
+`AZURE_CLIENT_SECRET`, certificaatbestand of PFX in GitHub. Voeg alleen de
+private key van de release-GitHub-App toe als environment secret
+`RELEASE_PUBLISHER_APP_PRIVATE_KEY`.
 
 ## Releaseflow
 
@@ -67,7 +80,7 @@ Deze identifiers zijn geen geheimen. Configureer nadrukkelijk geen
   geen GitHub Release aangemaakt.
 - Een `tauri-v*` tag bouwt eerst de EXE en wacht daarna op goedkeuring van
   `release-signing`. Pas na een geldige handtekening en timestamp wordt de
-  GitHub Release gepubliceerd.
+  release gepubliceerd in `vtHul-IT/Autopilot-GDAP-Downloads`.
 - Ontbreekt een vereiste GitHub-variable of faalt signing, dan faalt de run en
   wordt geen unsigned release gepubliceerd.
 
@@ -83,8 +96,7 @@ ingevulde `TimeStamperCertificate`.
 
 ## Repositoryzichtbaarheid en publieke downloads
 
-Laat de bestaande repository publiek totdat de signed test is gevalideerd.
-Daarna kan de bronrepository privé worden gemaakt. Publiceer dan releases via
-een aparte publieke distributierepository; die stap vereist een apart,
-minimaal bevoegd GitHub App- of fine-grained token voor cross-repository
-release-upload en wordt bewust niet in deze eerste signingwijziging opgenomen.
+De bronrepository is privé. De workflow gebruikt een GitHub App met uitsluitend
+`Contents: Read and write`, geïnstalleerd op de publieke downloadrepository,
+om releases over repositories heen te publiceren. Gebruik geen persoonlijke
+PAT voor deze koppeling.

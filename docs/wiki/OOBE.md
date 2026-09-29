@@ -6,7 +6,7 @@ Open tijdens Windows Setup een verhoogde PowerShell met `Shift + F10`.
 
 ```powershell
 $exe = Join-Path $env:TEMP "CaptureTech-Autopilot-GDAP.exe"
-irm "https://github.com/mvthul/Autopilot-GDAP/releases/latest/download/capturetech-autopilot-gdap.exe" -OutFile $exe
+irm "https://github.com/vtHul-IT/Autopilot-GDAP-Downloads/releases/latest/download/capturetech-autopilot-gdap.exe" -OutFile $exe
 Start-Process -FilePath $exe
 ```
 
@@ -24,7 +24,7 @@ is:
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process -Force
-irm "https://raw.githubusercontent.com/mvthul/Autopilot-GDAP/refs/heads/master/Get-AutopilotGDAP.ps1" | iex
+irm "https://raw.githubusercontent.com/vtHul-IT/Autopilot-GDAP/refs/heads/master/Get-AutopilotGDAP.ps1" | iex
 ```
 
 ## Daarna

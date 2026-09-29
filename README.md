@@ -1,7 +1,7 @@
 # Autopilot GDAP Tool
 
-[![CodeQL security scan](https://github.com/mvthul/Autopilot-GDAP/actions/workflows/codeql.yml/badge.svg)](https://github.com/mvthul/Autopilot-GDAP/actions/workflows/codeql.yml)
-[![Tauri Windows release](https://github.com/mvthul/Autopilot-GDAP/actions/workflows/build-tauri.yml/badge.svg)](https://github.com/mvthul/Autopilot-GDAP/actions/workflows/build-tauri.yml)
+[![CodeQL security scan](https://github.com/vtHul-IT/Autopilot-GDAP/actions/workflows/codeql.yml/badge.svg)](https://github.com/vtHul-IT/Autopilot-GDAP/actions/workflows/codeql.yml)
+[![Tauri Windows release](https://github.com/vtHul-IT/Autopilot-GDAP/actions/workflows/build-tauri.yml/badge.svg)](https://github.com/vtHul-IT/Autopilot-GDAP/actions/workflows/build-tauri.yml)
 
 CaptureTech-toolset voor IT-hulpmedewerkers om Windows Autopilot-apparaten via GDAP en Microsoft Graph aan klanttenants toe te voegen. De moderne Tauri-app is de primaire interface; de WPF-tool blijft beschikbaar als herstel- en diagnosepad.
 
@@ -36,7 +36,7 @@ Een GitHub Actions-workflow bouwt de Windows x64-EXE op een Windows-runner. Publ
 tauri-v0.1.0
 ```
 
-De workflow voegt uitsluitend een met Azure Artifact Signing ondertekende `capturetech-autopilot-gdap.exe` én de bijbehorende `capturetech-autopilot-gdap.exe.sha256` toe aan de GitHub Release. Controleer de SHA-256 vóór bredere distributie. De huidige `Get-AutopilotGDAP.ps1` blijft beschikbaar als fallback voor OOBE, herstel en diagnose.
+De workflow voegt uitsluitend een met Azure Artifact Signing ondertekende `capturetech-autopilot-gdap.exe` én de bijbehorende `capturetech-autopilot-gdap.exe.sha256` toe aan de publieke [downloadrepository](https://github.com/vtHul-IT/Autopilot-GDAP-Downloads). Controleer de SHA-256 vóór bredere distributie. De huidige `Get-AutopilotGDAP.ps1` blijft beschikbaar als interne fallback voor OOBE, herstel en diagnose.
 
 ### Tauri-interface
 
@@ -55,7 +55,7 @@ De tool gebruikt een eigen multi-tenant App Registration van IT-Hulp. Er worden 
 Voer de setup éénmalig uit op een beheerpc met Azure CLI en Global Administrator-rechten:
 
 ```powershell
-irm "https://raw.githubusercontent.com/mvthul/Autopilot-GDAP/refs/heads/master/Setup-AutopilotApp.ps1" -OutFile .\Setup-AutopilotApp.ps1
+irm "https://raw.githubusercontent.com/vtHul-IT/Autopilot-GDAP/refs/heads/master/Setup-AutopilotApp.ps1" -OutFile .\Setup-AutopilotApp.ps1
 .\Setup-AutopilotApp.ps1 -PartnerTenantId "<PARTNER-TENANT-ID>"
 ```
 
@@ -138,7 +138,7 @@ Deze portable EXE vraagt bij normaal Windows-gebruik automatisch administratorre
 
 ```powershell
 $exe = Join-Path $env:TEMP "CaptureTech-Autopilot-GDAP.exe"
-irm "https://github.com/mvthul/Autopilot-GDAP/releases/latest/download/capturetech-autopilot-gdap.exe" -OutFile $exe
+irm "https://github.com/vtHul-IT/Autopilot-GDAP-Downloads/releases/latest/download/capturetech-autopilot-gdap.exe" -OutFile $exe
 Start-Process -FilePath $exe
 ```
 
@@ -150,7 +150,7 @@ Gebruik de fallback wanneer WebView2 ontbreekt, de Tauri-app niet kan starten of
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process -Force
-irm "https://raw.githubusercontent.com/mvthul/Autopilot-GDAP/refs/heads/master/Get-AutopilotGDAP.ps1" | iex
+irm "https://raw.githubusercontent.com/vtHul-IT/Autopilot-GDAP/refs/heads/master/Get-AutopilotGDAP.ps1" | iex
 ```
 
 ### Vervolgstappen voor beide opties
@@ -176,4 +176,4 @@ irm "https://raw.githubusercontent.com/mvthul/Autopilot-GDAP/refs/heads/master/G
 
 ## Documentatie
 
-De GitHub Wiki-functie is ingeschakeld. De bronpagina's voor installatie en releases, OOBE, GDAP/PIM-rechten en troubleshooting staan in [`docs/wiki`](docs/wiki). GitHub maakt de afzonderlijke wiki-repository pas aan nadat er eenmaal via de [Wiki-pagina](https://github.com/mvthul/Autopilot-GDAP/wiki) een eerste pagina is gemaakt; daarna kunnen deze pagina's direct worden gepubliceerd.
+De GitHub Wiki-functie is ingeschakeld. De bronpagina's voor installatie en releases, OOBE, GDAP/PIM-rechten en troubleshooting staan in [`docs/wiki`](docs/wiki). GitHub maakt de afzonderlijke wiki-repository pas aan nadat er eenmaal via de Wiki-pagina van de private bronrepository een eerste pagina is gemaakt; daarna kunnen deze pagina's direct worden gepubliceerd.
